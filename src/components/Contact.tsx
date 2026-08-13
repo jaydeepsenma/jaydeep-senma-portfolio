@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Send, CheckCircle2, AlertCircle, Copy, Check } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, AlertCircle, Copy, Check } from 'lucide-react';
 import { cvData } from '../data/cvData';
 
 export const Contact: React.FC = () => {
@@ -11,7 +11,6 @@ export const Contact: React.FC = () => {
     message: '',
   });
 
-  const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
   const [copiedEmail, setCopiedEmail] = useState(false);
 
@@ -20,20 +19,18 @@ export const Contact: React.FC = () => {
     setError('');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
+      e.preventDefault();
       setError('Please fill in all required fields (Name, Email, Message).');
       return;
     }
 
     if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      e.preventDefault();
       setError('Please enter a valid email address.');
       return;
     }
-
-    setSubmitted(true);
-    setError('');
   };
 
   const copyEmailToClipboard = () => {
@@ -186,110 +183,48 @@ export const Contact: React.FC = () => {
               Send a Direct Message
             </h3>
 
-            {submitted ? (
-              <div
-                style={{
-                  padding: '2rem',
-                  borderRadius: 'var(--radius-md)',
-                  background: 'var(--accent-glow)',
-                  border: '1px solid var(--accent-primary)',
-                  textAlign: 'center',
-                }}
-              >
-                <CheckCircle2 size={48} style={{ color: 'var(--accent-primary)', margin: '0 auto 1rem auto' }} />
-                <h4 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem' }}>
-                  Message Sent Successfully!
-                </h4>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.94rem' }}>
-                  Thank you for reaching out, {formData.name}. I will review your message and reply promptly to {formData.email}.
-                </p>
-                <button
-                  onClick={() => { setSubmitted(false); setFormData({ name: '', email: '', subject: '', message: '' }); }}
-                  className="btn-secondary"
-                  style={{ marginTop: '1.25rem', fontSize: '0.85rem' }}
+            <form
+              action={`https://formsubmit.co/${cvData.personalInfo.email}`}
+              method="POST"
+              onSubmit={handleFormSubmit}
+              style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}
+            >
+              {/* FormSubmit Configuration Hidden Inputs */}
+              <input type="hidden" name="_subject" value={`New Portfolio Inquiry for ${cvData.personalInfo.name}`} />
+              <input type="hidden" name="_template" value="table" />
+              <input type="hidden" name="_captcha" value="false" />
+
+              {error && (
+                <div
+                  style={{
+                    padding: '0.75rem 1rem',
+                    borderRadius: 'var(--radius-sm)',
+                    background: 'rgba(239, 68, 68, 0.15)',
+                    border: '1px solid #ef4444',
+                    color: '#ef4444',
+                    fontSize: '0.88rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                  }}
                 >
-                  Send Another Message
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                {error && (
-                  <div
-                    style={{
-                      padding: '0.75rem 1rem',
-                      borderRadius: 'var(--radius-sm)',
-                      background: 'rgba(239, 68, 68, 0.15)',
-                      border: '1px solid #ef4444',
-                      color: '#ef4444',
-                      fontSize: '0.88rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                    }}
-                  >
-                    <AlertCircle size={16} />
-                    <span>{error}</span>
-                  </div>
-                )}
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
-                      Your Name *
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      placeholder="e.g. John Doe"
-                      style={{
-                        width: '100%',
-                        padding: '0.75rem 1rem',
-                        borderRadius: 'var(--radius-md)',
-                        background: 'var(--bg-secondary)',
-                        border: '1px solid var(--border-color)',
-                        color: 'var(--text-main)',
-                        fontSize: '0.92rem',
-                        outline: 'none',
-                      }}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
-                      Your Email *
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder="e.g. john@company.com"
-                      style={{
-                        width: '100%',
-                        padding: '0.75rem 1rem',
-                        borderRadius: 'var(--radius-md)',
-                        background: 'var(--bg-secondary)',
-                        border: '1px solid var(--border-color)',
-                        color: 'var(--text-main)',
-                        fontSize: '0.92rem',
-                        outline: 'none',
-                      }}
-                    />
-                  </div>
+                  <AlertCircle size={16} />
+                  <span>{error}</span>
                 </div>
+              )}
 
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
-                    Subject
+                    Your Name *
                   </label>
                   <input
                     type="text"
-                    name="subject"
-                    value={formData.subject}
+                    name="name"
+                    value={formData.name}
                     onChange={handleChange}
-                    placeholder="e.g. Senior Laravel Developer Opportunity"
+                    placeholder="e.g. John Doe"
+                    required
                     style={{
                       width: '100%',
                       padding: '0.75rem 1rem',
@@ -305,14 +240,15 @@ export const Contact: React.FC = () => {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
-                    Message *
+                    Your Email *
                   </label>
-                  <textarea
-                    name="message"
-                    rows={4}
-                    value={formData.message}
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
                     onChange={handleChange}
-                    placeholder="Describe your project requirements or position..."
+                    placeholder="e.g. john@company.com"
+                    required
                     style={{
                       width: '100%',
                       padding: '0.75rem 1rem',
@@ -322,17 +258,64 @@ export const Contact: React.FC = () => {
                       color: 'var(--text-main)',
                       fontSize: '0.92rem',
                       outline: 'none',
-                      resize: 'vertical',
                     }}
                   />
                 </div>
+              </div>
 
-                <button type="submit" className="btn-primary" style={{ width: '100%' }}>
-                  <span>Send Message</span>
-                  <Send size={18} />
-                </button>
-              </form>
-            )}
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
+                  Subject
+                </label>
+                <input
+                  type="text"
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleChange}
+                  placeholder="e.g. Senior Laravel Developer Opportunity"
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'var(--bg-secondary)',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--text-main)',
+                    fontSize: '0.92rem',
+                    outline: 'none',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
+                  Message *
+                </label>
+                <textarea
+                  name="message"
+                  rows={4}
+                  value={formData.message}
+                  onChange={handleChange}
+                  placeholder="Describe your project requirements or position..."
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'var(--bg-secondary)',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--text-main)',
+                    fontSize: '0.92rem',
+                    outline: 'none',
+                    resize: 'vertical',
+                  }}
+                />
+              </div>
+
+              <button type="submit" className="btn-primary" style={{ width: '100%' }}>
+                <span>Send Message</span>
+                <Send size={18} />
+              </button>
+            </form>
           </motion.div>
         </div>
       </div>
